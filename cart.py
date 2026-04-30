@@ -15,42 +15,31 @@ class ShoppingCart:
         self._discount = None
 
     def add_item(self, name: str, price: float, quantity: int = 1) -> None:
-        """
-        Add an item to the cart.
-        If the item already exists, increase its quantity.
-        Raises ValueError for non-positive quantity or negative price.
-        """
         if quantity <= 0:
             raise ValueError("Quantity must be a positive integer.")
         if price < 0:
             raise ValueError("Price cannot be negative.")
-
         if name in self._items:
-            self._items[name]["quantity"] = quantity
+            self._items[name]["quantity"] += quantity  # BUG 1 FIX: += yerine = vardı
         else:
             self._items[name] = {"price": price, "quantity": quantity}
 
     def remove_item(self, name: str) -> None:
-        """
-        Remove an item from the cart by name.
-        Raises KeyError if the item is not in the cart.
-        """
         if name not in self._items:
             raise KeyError(f"Item '{name}' is not in the cart.")
         del self._items[name]
+        # BUG 2 FIX: item silince discount kontrol et
+        if self._discount is not None:
+            subtotal = self._subtotal()
+            if subtotal < self._discount["min_order"]:
+                self._discount = None
 
     def apply_discount(self, code: str) -> None:
-        """
-        Apply a discount code to the cart.
-        Raises ValueError for unknown codes or unmet minimum order thresholds.
-        """
         if code not in self.DISCOUNT_CODES:
             raise ValueError(f"'{code}' is not a valid discount code.")
-
         discount = self.DISCOUNT_CODES[code]
         subtotal = self._subtotal()
-
-        if subtotal > discount["min_order"]:
+        if subtotal >= discount["min_order"]:  # BUG 3 FIX: > yerine >= olmalı
             self._discount = discount
         else:
             raise ValueError(
@@ -59,36 +48,20 @@ class ShoppingCart:
             )
 
     def get_total(self) -> float:
-        """
-        Return the final cart total after any applied discount.
-        Total is never negative.
-        """
         subtotal = self._subtotal()
-
         if self._discount is None:
             return round(subtotal, 2)
-
         if self._discount["type"] == "percent":
-            discount_amount = subtotal * (self._discount["value"] // 100)
+            discount_amount = subtotal * (self._discount["value"] / 100)  # BUG 4 FIX: // yerine /
             return round(max(0.0, subtotal - discount_amount), 2)
-
         else:
             return round(max(0.0, subtotal - self._discount["value"]), 2)
 
     def clear(self) -> None:
-        """
-        Remove all items from the cart.
-        """
         self._items = {}
 
     def get_item_count(self) -> int:
-        """
-        Return the total number of individual items in the cart
-        (i.e. the sum of all quantities).
-
-        This method is not implemented yet.
-        """
-        raise NotImplementedError("get_item_count() is not implemented yet.")
+        return sum(item["quantity"] for item in self._items.values())  # BUG 5 FIX: implement edildi
 
     def _subtotal(self) -> float:
         return sum(
