@@ -98,10 +98,10 @@ class TestGetTotal(unittest.TestCase):
         self.assertEqual(cart.get_total(), 10.0)
 
     def test_total_never_negative(self):
-    	cart = ShoppingCart()
-    	cart.add_item("Elma", 10.0, 4)  # subtotal=40, FLAT5 min=30
-    	cart.apply_discount("FLAT5")    # 40 - 5 = 35
-   	self.assertGreaterEqual(cart.get_total(), 0.0)
+        cart = ShoppingCart()
+        cart.add_item("Elma", 10.0, 4)  # subtotal=40, FLAT5 min=30
+        cart.apply_discount("FLAT5")    # 40 - 5 = 35
+        self.assertGreaterEqual(cart.get_total(), 0.0)
 
     def test_empty_cart_total(self):
         cart = ShoppingCart()
